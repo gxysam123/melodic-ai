@@ -161,6 +161,20 @@ export function getDownloadUrl(taskId: string): string {
 }
 
 /**
+ * 取消处理任务
+ */
+export async function cancelProcessing(taskId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/cancel/${taskId}`, {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || '取消失败');
+  }
+}
+
+/**
  * 清理任务文件
  */
 export async function cleanupTask(taskId: string): Promise<void> {

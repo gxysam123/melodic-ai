@@ -148,31 +148,26 @@ export default function App() {
     setIsPlaying(false);
   };
 
-  // 暂停处理
-  const handlePauseProcessing = () => {
+  // 暂停处理（真正取消后端）
+  const handlePauseProcessing = async () => {
     if (progressIntervalRef.current) {
       clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = null;
     }
-    setIsPaused(true);
-    addLog('⏸️ 处理已暂停', 'warning');
-  };
 
-  // 继续处理
-  const handleResumeProcessing = () => {
-    setIsPaused(false);
-    addLog('▶️ 继续处理...', 'info');
-
-    // 恢复进度动画
-    progressIntervalRef.current = setInterval(() => {
-      setProcessingProgress(prev => {
-        const newProgress = prev + Math.random() * 8 + 3;
-        if (newProgress >= 95) {
-          return 95;
-        }
-        return newProgress;
-      });
-    }, 400);
+    // 调用后端取消API
+    if (taskId) {
+      try {
+        await API.cancelProcessing(taskId);
+        setProcessingStatus('ready');
+        setProcessingProgress(0);
+        setIsPaused(false);
+        addLog('⏸️ 处理已停止', 'warning');
+      } catch (error: any) {
+        addLog(`停止失败: ${error.message}`, 'warning');
+        setIsPaused(true);
+      }
+    }
   };
 
   // 开始处理
@@ -359,7 +354,7 @@ export default function App() {
                                 controls
                                 className="w-full rounded-lg"
                                 style={{
-                                  accentColor: '#4338CA',
+                                  accentColor: '#7274FF',
                                   background: '#0A0A1A',
                                   borderRadius: '0.5rem',
                                   padding: '0.5rem',
@@ -387,7 +382,7 @@ export default function App() {
                           controls
                           className="w-full mb-5 rounded-lg"
                           style={{
-                            accentColor: '#4338CA',
+                            accentColor: '#7274FF',
                             background: '#0A0A1A',
                             borderRadius: '0.5rem',
                             padding: '0.5rem'
@@ -440,14 +435,10 @@ export default function App() {
                 <div className="bg-surface-container/30 backdrop-blur-sm rounded-xl p-5 border border-outline-variant/10">
                   <div className="flex flex-col gap-3">
                     <button
-                      disabled={!taskId || (processingStatus === 'processing' && !isPaused && false)}
+                      disabled={!taskId}
                       onClick={() => {
                         if (processingStatus === 'processing') {
-                          if (isPaused) {
-                            handleResumeProcessing();
-                          } else {
-                            handlePauseProcessing();
-                          }
+                          handlePauseProcessing();
                         } else {
                           handleStartProcessing();
                         }
@@ -456,24 +447,15 @@ export default function App() {
                         !taskId
                           ? 'bg-surface-container border border-outline-variant/10 text-on-surface-variant/30 cursor-not-allowed'
                           : processingStatus === 'processing'
-                            ? isPaused
-                              ? 'bg-tertiary/20 text-tertiary border border-tertiary/30 hover:bg-tertiary/30 cursor-pointer'
-                              : 'bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 cursor-pointer'
+                            ? 'bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 cursor-pointer'
                             : 'bg-gradient-to-r from-primary to-secondary text-white hover-glow shadow-[0_0_30px_rgba(67,56,202,0.2)] cursor-pointer hover:shadow-[0_0_40px_rgba(67,56,202,0.3)]'
                       }`}
                     >
                       {processingStatus === 'processing' ? (
-                        isPaused ? (
-                          <>
-                            <Play className="w-5 h-5 fill-current" />
-                            继续处理
-                          </>
-                        ) : (
-                          <>
-                            <Pause className="w-5 h-5" />
-                            停止处理
-                          </>
-                        )
+                        <>
+                          <Pause className="w-5 h-5" />
+                          停止处理
+                        </>
                       ) : processingStatus === 'completed' ? (
                         <>
                           重新处理

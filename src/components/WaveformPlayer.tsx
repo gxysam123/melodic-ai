@@ -164,7 +164,7 @@ export default function WaveformPlayer({
         
         if (isActive) {
           // Glow style for active audio signal
-          ctx.fillStyle = '#4338CA';
+          ctx.fillStyle = '#7274FF';
           ctx.shadowBlur = 10;
           ctx.shadowColor = 'rgba(67, 56, 202, 0.7)';
         } else {

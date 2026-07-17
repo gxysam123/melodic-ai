@@ -415,6 +415,33 @@ def download_track(task_id):
     )
 
 
+@app.route('/api/cancel/<task_id>', methods=['POST'])
+def cancel_processing(task_id):
+    """
+    取消正在处理的任务
+    """
+    if task_id not in tasks:
+        return jsonify({'error': '任务不存在'}), 404
+
+    task = tasks[task_id]
+
+    if task['status'] == 'processing':
+        # 标记为已取消
+        task['status'] = 'cancelled'
+        task['progress'] = 0
+        logger.info(f"任务已取消: {task_id}")
+
+        return jsonify({
+            'task_id': task_id,
+            'status': 'cancelled',
+            'message': '处理已取消'
+        })
+
+    return jsonify({
+        'error': f'任务状态为 {task["status"]}，无法取消'
+    }), 400
+
+
 @app.route('/api/cleanup/<task_id>', methods=['DELETE'])
 def cleanup_task(task_id):
     """

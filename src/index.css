@@ -6,7 +6,7 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   /* Modern Dark Audio Tool Theme - UI/UX Pro Max Optimized */
-  --color-primary: #4338CA;
+  --color-primary: #7274FF;
   --color-secondary: #312E81;
   --color-tertiary: #F97316;
   --color-background: #0F0F23;
@@ -24,7 +24,7 @@
   --color-inverse-on-surface: #1E1E3D;
   --color-outline: #64748B;
   --color-outline-variant: #334155;
-  --color-secondary-container: #4338CA;
+  --color-secondary-container: #7274FF;
   --color-on-secondary-fixed: #1E1B4B;
   --color-on-secondary: #312E81;
   --color-on-secondary-container: #A5B4FC;
@@ -45,10 +45,10 @@
   --color-surface-variant: #252547;
   --color-secondary-fixed: #818CF8;
   --color-on-tertiary-container: #FFEDD5;
-  --color-surface-tint: #4338CA;
-  --color-primary-container: #4338CA;
+  --color-surface-tint: #7274FF;
+  --color-primary-container: #7274FF;
   --color-tertiary-fixed: #F97316;
-  --color-on-secondary-fixed-variant: #4338CA;
+  --color-on-secondary-fixed-variant: #7274FF;
   --color-primary-fixed-dim: #6366F1;
   --color-on-primary-fixed-variant: #312E81;
   --color-on-error-container: #FEE2E2;
@@ -87,7 +87,7 @@
 
   .sidebar-active {
     background: linear-gradient(90deg, rgba(67, 56, 202, 0.12) 0%, transparent 100%);
-    border-left: 3px solid #4338CA;
+    border-left: 3px solid #7274FF;
   }
 
   /* Custom scrollbar for cyber terminal and logs */
@@ -103,13 +103,13 @@
     border-radius: 4px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #4338CA;
+    background: #7274FF;
   }
 
   /* Focus states for accessibility */
   button:focus-visible,
   input:focus-visible {
-    outline: 2px solid #4338CA;
+    outline: 2px solid #7274FF;
     outline-offset: 2px;
   }
 
