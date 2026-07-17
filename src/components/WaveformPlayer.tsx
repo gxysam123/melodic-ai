@@ -1,15 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  UploadCloud, 
-  FileAudio, 
-  Play, 
-  Pause, 
-  Square, 
-  Trash2, 
-  Sparkles, 
-  PlusCircle, 
-  Link2,
-  AlertCircle
+import {
+  UploadCloud,
+  FileAudio,
+  Play,
+  Pause,
+  Square,
+  Trash2,
+  PlusCircle
 } from 'lucide-react';
 import { AudioFile } from '../types';
 
@@ -33,10 +30,7 @@ export default function WaveformPlayer({
   progress,
 }: WaveformPlayerProps) {
   const [isDragging, setIsDragging] = useState(false);
-  const [showUrlInput, setShowUrlInput] = useState(false);
-  const [urlValue, setUrlValue] = useState('');
-  const [urlError, setUrlError] = useState('');
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
@@ -259,63 +253,10 @@ export default function WaveformPlayer({
             <button
               id="upload-local-btn"
               onClick={() => fileInputRef.current?.click()}
-              className="bg-gradient-to-r from-primary to-secondary text-white px-8 py-3 rounded-lg text-[14px] font-bold flex items-center gap-2.5 transition-all hover-glow shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+              className="bg-gradient-to-r from-primary to-secondary text-white px-10 py-3.5 rounded-lg text-[14px] font-bold flex items-center gap-2.5 transition-all hover-glow shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
             >
-              <PlusCircle className="w-4.5 h-4.5" />
-              本地文件
-            </button>
-            <button
-              id="upload-url-btn"
-              onClick={() => setShowUrlInput(!showUrlInput)}
-              className="bg-surface-variant/30 text-on-surface-variant hover:bg-surface-variant/50 px-8 py-3 rounded-lg text-[14px] font-semibold flex items-center gap-2.5 transition-all border border-outline-variant/20 hover:border-outline-variant/40 cursor-pointer"
-            >
-              <Link2 className="w-4.5 h-4.5" />
-              网络链接
-            </button>
-          </div>
-
-          {/* Link URL Input Field */}
-          {showUrlInput && (
-            <form onSubmit={handleUrlSubmit} className="w-full max-w-md bg-surface-container-low/80 backdrop-blur-sm p-5 rounded-lg border border-outline-variant/30 mb-6 flex flex-col gap-3">
-              <div className="flex gap-2.5">
-                <input
-                  id="network-url-input"
-                  type="text"
-                  value={urlValue}
-                  onChange={(e) => {
-                    setUrlValue(e.target.value);
-                    setUrlError('');
-                  }}
-                  placeholder="请输入音频文件的直链 URL (mp3/wav)..."
-                  className="flex-1 bg-background border border-outline-variant/40 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary text-on-surface text-[13px] transition-colors"
-                />
-                <button
-                  id="submit-url-btn"
-                  type="submit"
-                  className="bg-primary text-white px-5 py-2.5 rounded-lg text-[13px] font-bold hover:brightness-110 active:scale-95 cursor-pointer transition-all"
-                >
-                  载入
-                </button>
-              </div>
-              {urlError && (
-                <p className="text-error text-[11px] text-left flex items-center gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {urlError}
-                </p>
-              )}
-            </form>
-          )}
-
-          {/* Prompt Demo Track */}
-          <div className="pt-6 border-t border-outline-variant/10 w-full max-w-md flex flex-col items-center">
-            <span className="text-[11px] text-on-surface-variant/50 font-mono tracking-wider uppercase mb-3">或者快捷测试</span>
-            <button
-              id="load-demo-btn"
-              onClick={loadDemoTrack}
-              className="flex items-center gap-2 bg-tertiary/15 hover:bg-tertiary/25 text-tertiary px-6 py-2.5 rounded-lg border border-tertiary/30 text-[12px] font-semibold tracking-wide transition-all duration-300 hover:shadow-lg cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              加载 Cyber Synth 演示音轨
+              <PlusCircle className="w-5 h-5" />
+              选择音频文件
             </button>
           </div>
         </div>

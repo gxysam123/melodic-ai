@@ -385,68 +385,57 @@ export default function App() {
                   logs={logs}
                   progress={processingStatus === 'processing' ? processingProgress : (processingStatus === 'completed' ? 100 : 0)}
                 />
-              </div>
 
-            </div>
-
-            {/* Action Bar - 美化外层容器 */}
-            <div className="bg-surface-container/30 backdrop-blur-sm rounded-xl p-6 border border-outline-variant/10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5 text-[12px] text-on-surface-variant/60">
-                  <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                    file ? 'bg-tertiary shadow-[0_0_10px_rgba(249,115,22,0.6)] animate-pulse' : 'bg-tertiary/40'
-                  }`} />
-                  <span>{file ? '引擎连接成功' : '引擎就绪，等待音频输入'}</span>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  {processingStatus === 'completed' && (
+                {/* Action Bar - 处理按钮区域 */}
+                <div className="bg-surface-container/30 backdrop-blur-sm rounded-xl p-5 border border-outline-variant/10">
+                  <div className="flex flex-col gap-3">
                     <button
-                      onClick={() => {
-                        setProcessingStatus('ready');
-                        setProcessingProgress(0);
-                        setOutputAudioUrl(null);
-                      }}
-                      className="bg-surface-container hover:bg-surface-variant/30 text-on-surface-variant px-6 py-3 rounded-lg text-[13px] font-semibold border border-outline-variant/20 transition-all duration-200 hover:border-outline-variant/40"
+                      disabled={!taskId || processingStatus === 'processing'}
+                      onClick={handleStartProcessing}
+                      className={`w-full py-3.5 rounded-lg text-[14px] font-bold flex items-center justify-center gap-2.5 transition-all duration-300 shadow-lg group active:scale-95 ${
+                        !taskId
+                          ? 'bg-surface-container border border-outline-variant/10 text-on-surface-variant/30 cursor-not-allowed'
+                          : processingStatus === 'processing'
+                            ? 'bg-primary/20 text-primary border border-primary/30'
+                            : 'bg-gradient-to-r from-primary to-secondary text-white hover-glow shadow-[0_0_30px_rgba(67,56,202,0.2)] cursor-pointer hover:shadow-[0_0_40px_rgba(67,56,202,0.3)]'
+                      }`}
                     >
-                      重置处理
+                      {processingStatus === 'processing' ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          正在处理...
+                        </>
+                      ) : processingStatus === 'completed' ? (
+                        <>
+                          重新处理
+                          <Play className="w-4 h-4 fill-current" />
+                        </>
+                      ) : (
+                        <>
+                          开始处理
+                          <Play className="w-4 h-4 fill-current" />
+                        </>
+                      )}
                     </button>
-                  )}
 
-                  <button
-                    disabled={!taskId || processingStatus === 'processing'}
-                    onClick={handleStartProcessing}
-                    className={`px-10 py-3.5 rounded-lg text-[14px] font-bold flex items-center gap-2.5 transition-all duration-300 shadow-lg group active:scale-95 ${
-                      !taskId
-                        ? 'bg-surface-container border border-outline-variant/10 text-on-surface-variant/30 cursor-not-allowed'
-                        : processingStatus === 'processing'
-                          ? 'bg-primary/20 text-primary border border-primary/30'
-                          : 'bg-gradient-to-r from-primary to-secondary text-white hover-glow shadow-[0_0_30px_rgba(67,56,202,0.2)] cursor-pointer hover:shadow-[0_0_40px_rgba(67,56,202,0.3)]'
-                    }`}
-                  >
-                    {processingStatus === 'processing' ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        正在处理...
-                      </>
-                    ) : processingStatus === 'completed' ? (
-                      <>
-                        <Check className="w-5 h-5" />
-                        处理完成
-                      </>
-                    ) : (
-                      <>
-                        开始处理
-                        <Play className="w-4 h-4 fill-current" />
-                      </>
+                    {processingStatus === 'completed' && (
+                      <button
+                        onClick={() => {
+                          setProcessingStatus('ready');
+                          setProcessingProgress(0);
+                          setOutputAudioUrl(null);
+                          setSeparatedTracks(null);
+                        }}
+                        className="w-full bg-surface-container hover:bg-surface-variant/30 text-on-surface-variant py-3 rounded-lg text-[13px] font-semibold border border-outline-variant/20 transition-all duration-200 hover:border-outline-variant/40"
+                      >
+                        重置处理
+                      </button>
                     )}
-                  </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-          </div>
-        </div>
+            </div>
 
         <footer className="px-8 py-4 bg-surface-container-lowest/50 backdrop-blur-sm border-t border-outline-variant/10 flex justify-between items-center text-[11px] text-on-surface-variant/50">
           <div className="flex gap-6">
