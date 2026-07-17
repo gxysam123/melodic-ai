@@ -1,0 +1,31 @@
+# 妙音AI Python依赖
+
+# Flask Web框架
+flask==3.0.0
+flask-cors==4.0.0
+
+# Demucs音频分离
+demucs==4.0.1
+
+# PyTorch (根据你的CUDA版本选择)
+# CPU版本
+torch==2.1.0
+torchaudio==2.1.0
+
+# 如果有NVIDIA GPU，请卸载上面的CPU版本，安装以下CUDA版本:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# 音频处理
+numpy==1.24.3
+scipy==1.11.3
+soundfile==0.12.1
+
+# 视频处理（可选，用于从视频提取音频）
+# ffmpeg-python==0.2.0
+
+# 文件处理
+pathlib
+python-dotenv==1.0.0
+
+# 日志和工具
+Werkzeug==3.0.1

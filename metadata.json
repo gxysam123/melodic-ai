@@ -1,0 +1,6 @@
+{
+  "name": "Miaoyin AI Audio Center",
+  "description": "Professional cyberpunk-themed AI audio processing platform featuring smart denoising, vocal separation, and multi-track audio division.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

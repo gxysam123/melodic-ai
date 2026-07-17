@@ -1,0 +1,12 @@
+Change line 18 from:
+  onFileLoaded: (file: AudioFile) => void;
+To:
+  onFileLoaded: (file: AudioFile, rawFile?: File) => void;
+
+Change line 97 from:
+      onFileLoaded({
+To:
+      onFileLoaded({
+      
+And add rawFile parameter:
+      }, rawFile);

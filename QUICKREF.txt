@@ -1,0 +1,60 @@
+╔═══════════════════════════════════════════════════════════════════════╗
+║                      妙音AI - 快速参考卡                               ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+📍 当前状态: ✅ 服务运行中
+
+🌐 访问地址
+   前端UI: http://localhost:3000
+   后端API: http://localhost:5001/api
+
+🚀 快速启动
+   后端: cd miaoyin-ai-audio-center && python3 backend_server.py
+   前端: cd miaoyin-ai-audio-center && npm run dev
+
+🎯 核心功能
+   ✅ 人声分离 - 只输出纯净人声
+   ✅ 多音轨分离 - 分离人声、鼓、贝斯、钢琴
+   ✅ 智能降噪 - 消除背景噪音
+   ✅ 视频支持 - 自动提取音频
+   ✅ 批量处理 - 同时处理多个文件
+   ✅ GPU加速 - 自动检测并使用
+
+📝 命令行使用
+   # 提取人声
+   python3 audio_processor.py input.mp3 -o vocals.wav -m vocals
+
+   # 完整分离
+   python3 audio_processor.py input.mp3 -o output/ -m tracks
+
+   # 降噪处理
+   python3 audio_processor.py input.mp3 -o clean.wav -m denoise
+
+🔧 诊断工具
+   python3 diagnose.py   # 检查系统状态
+
+🐛 常见问题
+   白屏? → 检查后端是否运行: curl http://localhost:5001/api/health
+   慢? → 首次运行会下载模型，耐心等待
+   错误? → 查看终端日志输出
+
+📖 完整文档
+   README_DEMUCS.md  - Demucs使用手册
+   TUTORIAL.md       - 完整安装教程
+   DEPLOYMENT.md     - 部署成功指南
+
+💻 技术栈
+   后端: Flask + Demucs + PyTorch
+   前端: React 19 + TypeScript + Tailwind CSS 4
+
+📊 性能
+   CPU模式: 3分钟音频 → 5-8分钟处理
+   GPU模式: 3分钟音频 → 30-60秒处理
+
+🎓 支持的格式
+   音频: MP3, WAV, FLAC, OGG, M4A, AAC
+   视频: MP4, AVI, MOV, MKV, FLV, WEBM
+
+═══════════════════════════════════════════════════════════════════════
+
+版本: v2.4.0-CYBER | 2026-07-17 | ✅ 生产就绪

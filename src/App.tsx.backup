@@ -1,0 +1,370 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Play, Square, Check, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { 
+  TabId, 
+  DenoiseSettings, 
+  VocalSepSettings, 
+  TrackSepSettings, 
+  AudioFile, 
+  LogEntry, 
+  ProcessingStatus 
+} from './types';
+import Sidebar from './components/Sidebar';
+import Header from './components/Header';
+import LogTerminal from './components/LogTerminal';
+import DenoisePanel from './components/DenoisePanel';
+import VocalSepPanel from './components/VocalSepPanel';
+import TrackSepPanel from './components/TrackSepPanel';
+import WaveformPlayer from './components/WaveformPlayer';
+import { MiaoyinAudioEngine } from './lib/audioEngine';
+
+// Default initial logs representing initial system startup
+const INITIAL_LOGS: LogEntry[] = [
+  { id: '1', text: '妙音AI 引擎初始化中... [完毕]', type: 'success', timestamp: new Date().toLocaleTimeString() },
+  { id: '2', text: '加载混合 Transformer 权重模型...', type: 'info', timestamp: new Date().toLocaleTimeString() },
+  { id: '3', text: '正在映射本地 GPU 核心资源...', type: 'info', timestamp: new Date().toLocaleTimeString() },
+  { id: '4', text: '系统状态: 就绪。等待输入音频流。', type: 'cyber', timestamp: new Date().toLocaleTimeString() },
+];
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState<TabId>('denoise');
+  const [file, setFile] = useState<AudioFile | null>(null);
+  
+  // Audio Playback state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackProgress, setPlaybackProgress] = useState(0);
+
+  // Model Processing state (Simulating the 1.5s - 3s AI inference run)
+  const [processingStatus, setProcessingStatus] = useState<ProcessingStatus>('idle');
+  const [processingProgress, setProcessingProgress] = useState(0);
+
+  // Audio settings
+  const [denoiseSettings, setDenoiseSettings] = useState<DenoiseSettings>({
+    intensity: 85,
+    preserveReverb: true,
+    voiceRecovery: false,
+  });
+
+  const [vocalSettings, setVocalSettings] = useState<VocalSepSettings>({
+    sensitivity: 75,
+    focusVoice: 'backing', // Default: Original Mix
+    targetEnhancement: false,
+  });
+
+  const [trackSettings, setTrackSettings] = useState<TrackSepSettings>({
+    vocals: 100,
+    drums: 100,
+    bass: 100,
+    piano: 100,
+    others: 100,
+  });
+
+  const [logs, setLogs] = useState<LogEntry[]>(INITIAL_LOGS);
+
+  // Audio Engine Instance Ref
+  const audioEngineRef = useRef<MiaoyinAudioEngine | null>(null);
+  const processingIntervalRef = useRef<any>(null);
+
+  // Initialize Audio Engine on first render
+  useEffect(() => {
+    audioEngineRef.current = new MiaoyinAudioEngine();
+    
+    // Set up progress tracking callback
+    audioEngineRef.current.setOnProgress((percent) => {
+      setPlaybackProgress(percent);
+    });
+
+    return () => {
+      if (audioEngineRef.current) {
+        audioEngineRef.current.dispose();
+      }
+      if (processingIntervalRef.current) {
+        clearInterval(processingIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Sync settings modifications directly into Audio Engine Web Audio nodes
+  useEffect(() => {
+    if (!audioEngineRef.current) return;
+    
+    if (activeTab === 'denoise') {
+      audioEngineRef.current.updateDenoise(denoiseSettings);
+    } else if (activeTab === 'vocal-sep') {
+      audioEngineRef.current.updateVocalSep(vocalSettings);
+    } else if (activeTab === 'track-sep') {
+      audioEngineRef.current.updateTrackSep(trackSettings);
+    }
+  }, [activeTab, denoiseSettings, vocalSettings, trackSettings]);
+
+  // Helper to add custom log lines
+  const addLog = (text: string, type: 'info' | 'success' | 'warning' | 'cyber' | 'input' = 'info') => {
+    const newLog: LogEntry = {
+      id: Date.now().toString() + Math.random().toString(),
+      text,
+      type,
+      timestamp: new Date().toLocaleTimeString(),
+    };
+    setLogs(prev => [...prev, newLog]);
+  };
+
+  // Handler for loading a file
+  const handleFileLoaded = (newFile: AudioFile) => {
+    // If playing, stop current
+    handleStopPlayback();
+
+    setFile(newFile);
+    setProcessingStatus('ready');
+    setProcessingProgress(0);
+    setPlaybackProgress(0);
+
+    addLog(`载入音频文件: ${newFile.name}`, 'input');
+    addLog(`文件大小: ${(newFile.size / (1024 * 1024)).toFixed(2)} MB | 采样通道: 双声道立体声`, 'info');
+    addLog(`系统状态: 载入就绪。点击下方 “开始处理” 激活高能 AI 模型。`, 'cyber');
+  };
+
+  // Handler for removing a file
+  const handleFileRemoved = () => {
+    handleStopPlayback();
+    setFile(null);
+    setProcessingStatus('idle');
+    setProcessingProgress(0);
+    setPlaybackProgress(0);
+    addLog('音频流已卸载。系统重置。', 'warning');
+  };
+
+  // Play/Pause audio thread
+  const handlePlayPause = () => {
+    if (!audioEngineRef.current || !file) return;
+
+    if (isPlaying) {
+      audioEngineRef.current.pause();
+      setIsPlaying(false);
+      addLog('播放已暂停。', 'info');
+    } else {
+      audioEngineRef.current.play();
+      setIsPlaying(true);
+      addLog('音频流开始播放。物理通道混音中...', 'success');
+    }
+  };
+
+  // Stop audio thread
+  const handleStopPlayback = () => {
+    if (audioEngineRef.current) {
+      audioEngineRef.current.stop();
+    }
+    setIsPlaying(false);
+    setPlaybackProgress(0);
+  };
+
+  // Handle high-performance AI processing simulation
+  const handleStartProcessing = () => {
+    if (!file) return;
+
+    // Stop playback if playing
+    handleStopPlayback();
+
+    setProcessingStatus('processing');
+    setProcessingProgress(0);
+    addLog('启动 Cyber 音频分离引擎...', 'cyber');
+    addLog('正在对频谱进行快速傅里叶变换 (FFT) 提取原始信号...', 'info');
+
+    let progressVal = 0;
+    if (processingIntervalRef.current) clearInterval(processingIntervalRef.current);
+
+    processingIntervalRef.current = setInterval(() => {
+      progressVal += Math.floor(Math.random() * 8) + 4;
+      if (progressVal >= 100) {
+        progressVal = 100;
+        clearInterval(processingIntervalRef.current);
+        setProcessingStatus('completed');
+        setProcessingProgress(100);
+        addLog('逆短时傅里叶变换 (iSTFT) 还原就绪。', 'success');
+        addLog('智能声源分离运算完毕！耗时 1.35s | 本地 GPU 加速 100%', 'success');
+        addLog('系统状态: 处理完成。点击播放按钮，体验实时去噪与音轨调整。', 'cyber');
+      } else {
+        setProcessingProgress(progressVal);
+        
+        // Push intermediate logs at specific markers
+        if (progressVal >= 15 && progressVal < 25 && !logs.some(l => l.text.includes('快速傅里叶'))) {
+          addLog('FFT 特征映射完毕。当前帧频: 43.1 fps。', 'info');
+        } else if (progressVal >= 40 && progressVal < 50 && !logs.some(l => l.text.includes('加载混合 Demucs'))) {
+          addLog('加载混合 Demucs V4 模型权重 [Cyber 专用版]... [就绪]', 'success');
+        } else if (progressVal >= 65 && progressVal < 75 && !logs.some(l => l.text.includes('运算声源分离阻抗'))) {
+          addLog('正在分析阻抗相位差，剥离主唱与背景底噪中...', 'info');
+        } else if (progressVal >= 85 && progressVal < 95 && !logs.some(l => l.text.includes('应用重组声学'))) {
+          addLog('正在还原细节声场，保留高频自然谐波信息...', 'info');
+        }
+      }
+    }, 150);
+  };
+
+  // Clear simulated progress
+  const handleResetProcessing = () => {
+    handleStopPlayback();
+    setProcessingStatus('ready');
+    setProcessingProgress(0);
+    setPlaybackProgress(0);
+    addLog('重置处理。可重新点击开始处理。', 'info');
+  };
+
+  return (
+    <div id="cyber-audio-app" className="bg-background text-on-surface font-sans overflow-hidden selection:bg-primary/30 h-screen flex">
+      {/* 1. Sidebar Left */}
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+
+      {/* 2. Main Area */}
+      <main className="flex-1 flex flex-col bg-background relative overflow-hidden">
+        {/* Top Header Bar */}
+        <Header activeTab={activeTab} />
+
+        {/* Scrollable Main Area Content */}
+        <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+          <div className="max-w-7xl mx-auto space-y-6">
+            
+            {/* Engine / Status indicators */}
+            <div className="flex items-center gap-4 text-[12px] text-on-surface-variant/60 font-mono">
+              <span className="flex items-center gap-1.5">
+                当前状态: 
+                {processingStatus === 'processing' ? (
+                  <span className="text-primary font-bold flex items-center gap-1 animate-pulse">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    正在处理
+                  </span>
+                ) : processingStatus === 'completed' ? (
+                  <span className="text-primary font-bold shadow-[0_0_8px_rgba(0,242,255,0.4)]">处理完成</span>
+                ) : file ? (
+                  <span className="text-green-400 font-bold">待处理</span>
+                ) : (
+                  <span className="text-green-400 font-bold">就绪</span>
+                )}
+              </span>
+              <span className="opacity-30">|</span>
+              <span>引擎版本: v2.4.0-CYBER</span>
+            </div>
+
+            {/* Grid Layout (8 cols left, 4 cols right) */}
+            <div className="grid grid-cols-12 gap-6 items-start">
+              
+              {/* Left Column: Upload area & Parameter Panel */}
+              <div className="col-span-12 lg:col-span-8 space-y-6">
+                
+                {/* Waveform upload / player */}
+                <WaveformPlayer 
+                  file={file}
+                  onFileLoaded={handleFileLoaded}
+                  onFileRemoved={handleFileRemoved}
+                  isPlaying={isPlaying}
+                  onPlayPause={handlePlayPause}
+                  onStop={handleStopPlayback}
+                  progress={playbackProgress}
+                />
+
+                {/* Parameters Area based on active Tab */}
+                {activeTab === 'denoise' && (
+                  <DenoisePanel 
+                    settings={denoiseSettings}
+                    onChange={setDenoiseSettings}
+                  />
+                )}
+
+                {activeTab === 'vocal-sep' && (
+                  <VocalSepPanel 
+                    settings={vocalSettings}
+                    onChange={setVocalSettings}
+                  />
+                )}
+
+                {activeTab === 'track-sep' && (
+                  <TrackSepPanel 
+                    settings={trackSettings}
+                    onChange={setTrackSettings}
+                  />
+                )}
+              </div>
+
+              {/* Right Column: Terminal Logs Panel */}
+              <div className="col-span-12 lg:col-span-4 space-y-6">
+                <LogTerminal 
+                  logs={logs}
+                  progress={processingStatus === 'processing' ? processingProgress : (processingStatus === 'completed' ? 100 : 0)}
+                />
+              </div>
+
+            </div>
+
+            {/* Bottom Processing Control Bar */}
+            <div className="flex items-center justify-between pt-10 pb-6 border-t border-outline-variant/10">
+              <div className="flex items-center gap-2 text-[12px] text-on-surface-variant/50">
+                <div className={`w-2.5 h-2.5 rounded-full ${
+                  file ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse' : 'bg-green-500/40'
+                }`} />
+                <span>{file ? '引擎连接成功' : '引擎就绪，等待音频输入'}</span>
+              </div>
+
+              <div className="flex items-center gap-4">
+                {/* Reset button if already completed */}
+                {processingStatus === 'completed' && (
+                  <button
+                    id="reset-process-btn"
+                    onClick={handleResetProcessing}
+                    className="bg-surface-container hover:bg-surface-variant/30 text-on-surface-variant hover:text-on-surface px-6 py-3 rounded-lg text-[13px] font-semibold border border-outline-variant/10 transition-all cursor-pointer"
+                  >
+                    重置处理
+                  </button>
+                )}
+
+                {/* Primary start button */}
+                <button
+                  id="start-process-btn"
+                  disabled={!file || processingStatus === 'processing'}
+                  onClick={handleStartProcessing}
+                  className={`px-10 py-3.5 rounded-lg text-[14px] font-bold flex items-center gap-2.5 transition-all duration-300 shadow-lg group active:scale-95 cursor-pointer ${
+                    !file 
+                      ? 'bg-surface-container border border-outline-variant/10 text-on-surface-variant/30 cursor-not-allowed shadow-none'
+                      : processingStatus === 'processing'
+                        ? 'bg-primary/20 text-primary border border-primary/30 cursor-wait'
+                        : 'bg-gradient-to-r from-primary to-[#b692ff] text-[#00363a] hover-glow shadow-[0_0_25px_rgba(0,242,255,0.2)]'
+                  }`}
+                >
+                  {processingStatus === 'processing' ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      正在分离音轨...
+                    </>
+                  ) : processingStatus === 'completed' ? (
+                    <>
+                      <Check className="w-5 h-5" />
+                      分离处理完成
+                    </>
+                  ) : (
+                    <>
+                      开始处理
+                      <Play className="w-4 h-4 fill-current group-hover:translate-x-0.5 transition-transform" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Footer info links */}
+        <footer className="px-8 py-4 bg-surface-container-lowest/30 border-t border-outline-variant/5 flex flex-col sm:flex-row justify-between items-center text-[11px] text-on-surface-variant/40 gap-4">
+          <div className="flex gap-6">
+            <a className="hover:text-primary transition-colors" href="#privacy">Privacy Policy</a>
+            <a className="hover:text-primary transition-colors" href="#terms">Terms of Service</a>
+            <a className="hover:text-primary transition-colors" href="#local">Local Processing</a>
+            <a className="hover:text-primary transition-colors" href="#discord">Discord</a>
+          </div>
+          <div className="flex items-center gap-3 font-mono">
+            <span>© 2026 MIAOYIN AI. POWERED BY DEMUCS AI.</span>
+            <span className="opacity-30">|</span>
+            <span>CYBER_UI_PROTO_V.4.2.1</span>
+          </div>
+        </footer>
+      </main>
+    </div>
+  );
+}
