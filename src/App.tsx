@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Square, Check, Loader2, Download } from 'lucide-react';
+import { Play, Square, Check, Loader2, Download, Pause } from 'lucide-react';
 import { 
   TabId, 
   DenoiseSettings, 
@@ -40,6 +40,8 @@ export default function App() {
 
   const [processingStatus, setProcessingStatus] = useState<ProcessingStatus>('idle');
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [denoiseSettings, setDenoiseSettings] = useState<DenoiseSettings>({
     intensity: 85,
@@ -62,6 +64,15 @@ export default function App() {
   });
 
   const [logs, setLogs] = useState<LogEntry[]>(INITIAL_LOGS);
+
+  // 清理interval
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
 
   const addLog = (text: string, type: 'info' | 'success' | 'warning' | 'cyber' | 'input' = 'info') => {
     const newLog: LogEntry = {
@@ -137,6 +148,33 @@ export default function App() {
     setIsPlaying(false);
   };
 
+  // 暂停处理
+  const handlePauseProcessing = () => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    setIsPaused(true);
+    addLog('⏸️ 处理已暂停', 'warning');
+  };
+
+  // 继续处理
+  const handleResumeProcessing = () => {
+    setIsPaused(false);
+    addLog('▶️ 继续处理...', 'info');
+
+    // 恢复进度动画
+    progressIntervalRef.current = setInterval(() => {
+      setProcessingProgress(prev => {
+        const newProgress = prev + Math.random() * 8 + 3;
+        if (newProgress >= 95) {
+          return 95;
+        }
+        return newProgress;
+      });
+    }, 400);
+  };
+
   // 开始处理
   const handleStartProcessing = async () => {
     if (!taskId) {
@@ -149,23 +187,27 @@ export default function App() {
     setProcessingProgress(0);
     setOutputAudioUrl(null);
     setSeparatedTracks(null);
+    setIsPaused(false);
 
     addLog('启动 Cyber 音频处理引擎...', 'cyber');
     addLog('正在进行快速傅里叶变换 (FFT)...', 'info');
 
     // 模拟进度更新
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-      progress += Math.random() * 8 + 3;
-      if (progress >= 95) progress = 95;
-      setProcessingProgress(progress);
+    progressIntervalRef.current = setInterval(() => {
+      setProcessingProgress(prev => {
+        const newProgress = prev + Math.random() * 8 + 3;
+        if (newProgress >= 95) {
+          return 95;
+        }
+        return newProgress;
+      });
     }, 400);
 
     try {
       let response;
-      
+
       if (activeTab === 'denoise') {
-        addLog(`降噪强度: ${denoiseSettings.intensity}%`, 'info');
+        addLog(`保留混响: ${denoiseSettings.preserveReverb ? '开启' : '关闭'}`, 'info');
         response = await API.processDenoise(taskId, denoiseSettings);
       } else if (activeTab === 'vocal-sep') {
         addLog(`人声分离模式: ${vocalSettings.focusVoice}`, 'info');
@@ -175,12 +217,16 @@ export default function App() {
         response = await API.processTrackSeparation(taskId, trackSettings);
       }
 
-      clearInterval(progressInterval);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
 
       if (response) {
         setProcessingProgress(100);
         setProcessingStatus('completed');
         setOutputAudioUrl(response.output_url);
+        setIsPaused(false);
 
         // 保存分离后的音轨（如果有）
         if (response.tracks && activeTab === 'track-sep') {
@@ -193,10 +239,14 @@ export default function App() {
         addLog('系统状态: 处理完成。可播放结果或下载文件。', 'cyber');
       }
     } catch (error: any) {
-      clearInterval(progressInterval);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
       addLog(`处理失败: ${error.message}`, 'warning');
       setProcessingStatus('ready');
       setProcessingProgress(0);
+      setIsPaused(false);
     }
   };
 
@@ -390,21 +440,40 @@ export default function App() {
                 <div className="bg-surface-container/30 backdrop-blur-sm rounded-xl p-5 border border-outline-variant/10">
                   <div className="flex flex-col gap-3">
                     <button
-                      disabled={!taskId || processingStatus === 'processing'}
-                      onClick={handleStartProcessing}
+                      disabled={!taskId || (processingStatus === 'processing' && !isPaused && false)}
+                      onClick={() => {
+                        if (processingStatus === 'processing') {
+                          if (isPaused) {
+                            handleResumeProcessing();
+                          } else {
+                            handlePauseProcessing();
+                          }
+                        } else {
+                          handleStartProcessing();
+                        }
+                      }}
                       className={`w-full py-3.5 rounded-lg text-[14px] font-bold flex items-center justify-center gap-2.5 transition-all duration-300 shadow-lg group active:scale-95 ${
                         !taskId
                           ? 'bg-surface-container border border-outline-variant/10 text-on-surface-variant/30 cursor-not-allowed'
                           : processingStatus === 'processing'
-                            ? 'bg-primary/20 text-primary border border-primary/30'
+                            ? isPaused
+                              ? 'bg-tertiary/20 text-tertiary border border-tertiary/30 hover:bg-tertiary/30 cursor-pointer'
+                              : 'bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 cursor-pointer'
                             : 'bg-gradient-to-r from-primary to-secondary text-white hover-glow shadow-[0_0_30px_rgba(67,56,202,0.2)] cursor-pointer hover:shadow-[0_0_40px_rgba(67,56,202,0.3)]'
                       }`}
                     >
                       {processingStatus === 'processing' ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          正在处理...
-                        </>
+                        isPaused ? (
+                          <>
+                            <Play className="w-5 h-5 fill-current" />
+                            继续处理
+                          </>
+                        ) : (
+                          <>
+                            <Pause className="w-5 h-5" />
+                            停止处理
+                          </>
+                        )
                       ) : processingStatus === 'completed' ? (
                         <>
                           重新处理
