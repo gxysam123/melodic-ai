@@ -506,6 +506,9 @@ export default function App() {
 
             </div>
 
+          </div>
+        </div>
+
         <footer className="px-8 py-4 bg-surface-container-lowest/50 backdrop-blur-sm border-t border-outline-variant/10 flex justify-between items-center text-[11px] text-on-surface-variant/50">
           <div className="flex gap-6">
             <a className="hover:text-primary transition-colors duration-200 cursor-pointer" href="#privacy">Privacy Policy</a>
