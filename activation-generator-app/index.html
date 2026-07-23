@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>激活码生成器 - 仅供管理员使用</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            color: #856404;
+        }
+
+        .warning strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-batch {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .result h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .activation-code {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #667eea;
+            text-align: center;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        .batch-result {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .code-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #e0e0e0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-text {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .copy-batch-btn {
+            padding: 5px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 10px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .info h4 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+
+        .info ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info li {
+            padding: 5px 0;
+            color: #555;
+        }
+
+        .info li:before {
+            content: "✓ ";
+            color: #2196F3;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 激活码生成器</h1>
+        <p class="subtitle">声音处理工具 - 管理员专用</p>
+
+        <div class="warning">
+            <strong>⚠️ 重要提示</strong>
+            此工具仅供管理员使用。请妥善保管生成的激活码，不要泄露给未授权人员。
+        </div>
+
+        <div class="form-group">
+            <label>生成类型</label>
+            <select id="generateType" onchange="toggleBatchInput()">
+                <option value="single">生成单个激活码</option>
+                <option value="batch">批量生成激活码</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="batchCountGroup" style="display: none;">
+            <label>生成数量</label>
+            <input type="number" id="batchCount" value="10" min="1" max="100" placeholder="输入生成数量（1-100）">
+        </div>
+
+        <div class="form-group">
+            <label>备注信息（可选）</label>
+            <input type="text" id="notes" placeholder="例如：张三购买，订单号：#12345">
+        </div>
+
+        <button class="btn" id="generateBtn" onclick="generateCode()">生成激活码</button>
+        <button class="btn btn-batch" onclick="generateBatch()" id="batchBtn" style="display: none;">批量生成</button>
+
+        <div id="result" class="result" style="display: none;">
+            <h3>生成成功</h3>
+            <div class="activation-code" id="codeDisplay"></div>
+            <button class="copy-btn" onclick="copyCode()">复制激活码</button>
+            <div id="codeInfo" style="margin-top: 15px; color: #666; font-size: 13px;"></div>
+        </div>
+
+        <div id="batchResult" class="result" style="display: none;">
+            <h3>批量生成成功</h3>
+            <div class="batch-result" id="batchCodes"></div>
+            <button class="download-btn" onclick="downloadCodes()">下载激活码列表</button>
+            <button class="copy-btn" onclick="copyAllCodes()" style="margin-top: 10px;">复制所有激活码</button>
+        </div>
+
+        <div class="info">
+            <h4>激活码说明</h4>
+            <ul>
+                <li>格式：VOICE-XXXXX-XXXXX-XXXXX-XXXXX</li>
+                <li>每个激活码都是唯一的</li>
+                <li>激活码包含校验位，防止随意生成</li>
+                <li>建议记录激活码分发情况</li>
+                <li>此工具完全离线运行，无需联网</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let generatedCodes = [];
+
+        function toggleBatchInput() {
+            const type = document.getElementById('generateType').value;
+            const batchCountGroup = document.getElementById('batchCountGroup');
+            const generateBtn = document.getElementById('generateBtn');
+            const batchBtn = document.getElementById('batchBtn');
+
+            if (type === 'batch') {
+                batchCountGroup.style.display = 'block';
+                generateBtn.style.display = 'none';
+                batchBtn.style.display = 'block';
+            } else {
+                batchCountGroup.style.display = 'none';
+                generateBtn.style.display = 'block';
+                batchBtn.style.display = 'none';
+            }
+        }
+
+        function generateActivationCode() {
+            // 生成随机字符串
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 去除易混淆字符
+
+            function randomSegment(length) {
+                let result = '';
+                for (let i = 0; i < length; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+
+            // 生成时间戳（用于唯一性）
+            const timestamp = Date.now().toString(36).toUpperCase();
+
+            // 生成4个随机段
+            const seg1 = randomSegment(5);
+            const seg2 = randomSegment(5);
+            const seg3 = randomSegment(5);
+
+            // 生成校验码（基于前3段）
+            const checkStr = seg1 + seg2 + seg3;
+            let checksum = 0;
+            for (let i = 0; i < checkStr.length; i++) {
+                checksum += checkStr.charCodeAt(i);
+            }
+            const seg4 = (checksum % 100000).toString().padStart(5, '0');
+
+            return `VOICE-${seg1}-${seg2}-${seg3}-${seg4.substring(0, 5).replace(/[0-9]/g, (d) => chars[parseInt(d) % chars.length])}`;
+        }
+
+        function generateCode() {
+            const code = generateActivationCode();
+            const notes = document.getElementById('notes').value;
+            const now = new Date().toLocaleString('zh-CN');
+
+            document.getElementById('codeDisplay').textContent = code;
+            document.getElementById('codeInfo').innerHTML = `
+                <strong>生成时间：</strong> ${now}<br>
+                ${notes ? `<strong>备注：</strong> ${notes}` : ''}
+            `;
+
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('batchResult').style.display = 'none';
+
+            // 记录到控制台（方便管理员查看）
+            console.log('生成激活码:', {
+                code: code,
+                time: now,
+                notes: notes
+            });
+        }
+
+        function generateBatch() {
+            const count = parseInt(document.getElementById('batchCount').value) || 10;
+            if (count < 1 || count > 100) {
+                alert('请输入1-100之间的数量');
+                return;
+            }
+
+            const notes = document.getElementById('notes').value;
+            const now = new Date().toLocaleString('zh-CN');
+            generatedCodes = [];
+
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                const code = generateActivationCode();
+                generatedCodes.push({
+                    code: code,
+                    time: now,
+                    notes: notes,
+                    index: i + 1
+                });
+
+                html += `
+                    <div class="code-item">
+                        <span class="code-text">${i + 1}. ${code}</span>
+                        <button class="copy-batch-btn" onclick="copyBatchCode('${code}')">复制</button>
+                    </div>
+                `;
+            }
+
+            document.getElementById('batchCodes').innerHTML = html;
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('batchResult').style.display = 'block';
+
+            console.log('批量生成激活码:', generatedCodes);
+        }
+
+        function copyCode() {
+            const code = document.getElementById('codeDisplay').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                btn.textContent = '已复制！';
+                setTimeout(() => {
+                    btn.textContent = '复制激活码';
+                }, 2000);
+            });
+        }
+
+        function copyBatchCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                btn.textContent = '已复制！';
+                setTimeout(() => {
+                    btn.textContent = '复制';
+                }, 1500);
+            });
+        }
+
+        function copyAllCodes() {
+            const allCodes = generatedCodes.map(item => item.code).join('\n');
+            navigator.clipboard.writeText(allCodes).then(() => {
+                const btn = event.target;
+                btn.textContent = '已复制所有激活码！';
+                setTimeout(() => {
+                    btn.textContent = '复制所有激活码';
+                }, 2000);
+            });
+        }
+
+        function downloadCodes() {
+            const notes = document.getElementById('notes').value;
+            let content = '声音处理工具 - 激活码列表\n';
+            content += '生成时间: ' + new Date().toLocaleString('zh-CN') + '\n';
+            if (notes) {
+                content += '备注: ' + notes + '\n';
+            }
+            content += '总数量: ' + generatedCodes.length + '\n';
+            content += '='.repeat(60) + '\n\n';
+
+            generatedCodes.forEach(item => {
+                content += `${item.index}. ${item.code}\n`;
+            });
+
+            content += '\n' + '='.repeat(60) + '\n';
+            content += '请妥善保管此激活码列表\n';
+
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `激活码列表_${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

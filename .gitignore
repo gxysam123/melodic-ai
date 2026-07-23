@@ -1,8 +1,92 @@
+# Node.js
 node_modules/
-build/
-dist/
-coverage/
-.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 *.log
+
+# Electron
+dist/
+release/
+out/
+
+# Build
+build/
+coverage/
+*.app
+*.dmg
+*.zip
+*.exe
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Temp files
+*.tmp
+*.temp
+.backend.pid
+
+# Audio files (large)
+*.mp3
+*.wav
+*.flac
+*.ogg
+*.m4a
+
+# Models (large)
+models/
+*.pth
+*.pt
+*.onnx
+
+# Environment
+.env
 .env*
 !.env.example
+.env.local
+.env.*.local
+
+# Cache
+.cache/
+.parcel-cache/
+.npm/
+.yarn/
+
+# Output
+outputs/
+uploads/
+temp/
+tmp/

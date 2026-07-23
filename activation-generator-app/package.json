@@ -1,0 +1,45 @@
+{
+  "name": "activation-generator",
+  "productName": "激活码生成器",
+  "version": "1.0.0",
+  "description": "声音处理工具 - 激活码生成器（管理员工具）",
+  "author": "Sound Processing Team",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-mac": "electron-builder --mac",
+    "build-win": "electron-builder --win",
+    "build-all": "electron-builder --mac --win"
+  },
+  "devDependencies": {
+    "electron": "^43.1.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.soundprocessing.activationgenerator",
+    "productName": "激活码生成器",
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": ["dmg", "zip"],
+      "icon": "icon.icns"
+    },
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "激活码生成器"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "icon.*"
+    ],
+    "directories": {
+      "output": "release"
+    }
+  }
+}
